@@ -5,12 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Is it? A Guernsey-based wordgame by The Quarry</title>
   <style>
-    :root { --size: 72px; --gap: 8px; --radius: 14px; --accent: #2266ff; --good: #16a34a; --bad:#ef4444; }
+    :root { --size: 64px; --gap: 8px; --radius: 14px; --accent: #2266ff; --good: #16a34a; --bad:#ef4444; }
     * { box-sizing: border-box; }
     body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: #f7f7fb; color: #111; }
-    header { padding: 20px 16px 8px; text-align: center; }
-    h1 { font-size: 40px; margin: 0 0 6px; }
-    .subtitle { color: #555; font-size: 14px; }
+    header { padding: 12px 10px 4px; text-align: center; }
+    h1 { font-size: 28px; margin: 0 0 4px; }
+    .subtitle { color: #555; font-size: 13px; }
+
+    /* Make word list more prominent under header */
+    .words {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin: 8px auto 12px;
+      max-width: 680px;
+    }
+
     main { display: grid; gap: 16px; padding: 12px 16px 28px; max-width: 720px; margin: 0 auto; }
     .board-wrap { display:flex; justify-content:center; }
     .board {
@@ -30,19 +41,33 @@
     }
     .cell.gone { opacity: 0; transform: scale(.7); pointer-events: none; filter: blur(1px); }
     .cell.selected { background: var(--accent); color: #fff; transform: scale(0.96); }
-    .hud { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap: wrap; }
-    .words { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .hud {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
     .word {
-      background:#fff; border-radius: 12px; padding:10px 12px; font-weight:700; text-transform: uppercase;
-      display:flex; align-items:center; justify-content:space-between; gap:6px;
-      box-shadow: 0 1px 1px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+      background: #fff;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 1px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.06);
+      white-space: nowrap;
     }
     .word.found { color: #0a7a35; text-decoration: line-through; opacity: .65; }
     .pill { font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 999px; background: #eef2ff; color: #334155; }
     .pill.good { background:#dcfce7; color:#14532d; }
     .pill.bad { background:#fee2e2; color:#7f1d1d; }
     .status { min-height: 22px; text-align:center; font-weight:700; }
-    .controls { display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap: wrap; }
+    .controls {
+      justify-content: center;
+    }
     button {
       background:#111827; color:#fff; border:0; border-radius: 10px; padding:10px 14px; font-weight:700; cursor:pointer;
       box-shadow: 0 1px 1px rgba(0,0,0,.06), 0 3px 12px rgba(0,0,0,.10);
@@ -51,9 +76,20 @@
     footer { text-align:center; color:#666; font-size:12px; padding-bottom: 26px;}
     .row { display:flex; gap:8px; align-items:center; }
 
-    @media (max-width: 420px) {
-      :root { --size: 46px; --gap: 6px; --radius: 10px; }
-      .words { grid-template-columns: 1fr; }
+    #resetBtn { display:none; }
+
+    button.small {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+      box-shadow: 0 1px 1px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.08);
+    }
+
+    @media (max-width: 420px){
+      .words{ grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); }
+    }
+    @media (max-width:420px){
+      :root{ --size:44px; --gap:6px; --radius:10px; }
     }
   </style>
 </head>
@@ -62,18 +98,13 @@
     <h1>Is it?!</h1>
     <div class="subtitle">"To the Beach, eh!" by Vicky.</div>
   </header>
+  <section class="words" id="wordList"></section>
   <main>
     <div class="hud">
-      <div class="row" style="gap:10px; flex-wrap:wrap;">
-        <div class="pill" id="progressPill">0 / ? found</div>
-        <div class="pill" id="lettersPill">Letters left: —</div>
-        <div class="pill" id="roundPill">Round 1</div>
+      <div class="row" style="gap:8px; flex-wrap:wrap; justify-content:center;">
         <div class="pill" id="timerPill">⏱ 00:00</div>
-      </div>
-      <div class="controls">
-        <button id="resetBtn" class="secondary">Clear</button>
-        <button id="shuffleBtn">Shuffle</button>
-        <button id="restartBtn" class="secondary">Restart</button>
+        <button id="shuffleBtn" class="small">Shuffle</button>
+        <button id="restartBtn" class="small secondary">Restart</button>
       </div>
     </div>
 
@@ -82,7 +113,7 @@
     </div>
 
     <div class="status" id="status"></div>
-    <section class="words" id="wordList"></section>
+    
 
     <!-- Game Over overlay -->
     <div id="gameOver" aria-hidden="true" style="display:none;">
@@ -155,7 +186,6 @@
       lettersPill=document.getElementById("lettersPill"),
       roundPill=document.getElementById("roundPill"),
       timerPill=document.getElementById("timerPill"),
-      resetBtn=document.getElementById("resetBtn"),
       shuffleBtn=document.getElementById("shuffleBtn"),
       restartBtn=document.getElementById("restartBtn"),
       wordListEl=document.getElementById("wordList");
@@ -167,22 +197,36 @@
     // --- FIT BOARD (auto size tiles for mobile) ---
     function fitBoardToContainer(){
       const wrap = document.querySelector('.board-wrap');
-      const wrapWidth = wrap.clientWidth || window.innerWidth || 400;
+      const headerH = document.querySelector('header').offsetHeight || 0;
+      const listH   = document.getElementById('wordList').offsetHeight || 0;
+      const controlsH = document.querySelector('.hud').offsetHeight || 0;
+
+      const viewportH = window.innerHeight || 800;
+      const pad = 28; // main bottom padding
       const gap = 8;
+
+      // Width-limited tile size (portrait width)
+      const wrapW = wrap.clientWidth || window.innerWidth || 360;
+      const tileW = Math.floor((Math.min(wrapW, 720) - gap*(COLS-1)) / COLS);
+
+      // Height-limited tile size (what's left under header + words + controls)
+      const availableH = viewportH - headerH - listH - controlsH - pad;
+      const tileH = Math.floor((availableH - gap*(ROWS-1)) / ROWS);
+
+      // Choose the smaller of the two, clamp to a sensible range
+      const size = Math.max(38, Math.min(tileW, tileH, 64));
+
+      document.documentElement.style.setProperty('--size', size + 'px');
       document.documentElement.style.setProperty('--gap', gap + 'px');
 
-      const maxBoard = Math.min(wrapWidth, 720) - 2;
-      // Tile size is based on COLUMNS to fit portrait width nicely
-      const tile = Math.floor((maxBoard - gap*(COLS-1)) / COLS);
-      const clamped = Math.max(42, Math.min(tile, 72)); // comfortable tap target
-
-      document.documentElement.style.setProperty('--size', clamped + 'px');
       boardEl.style.gridTemplateColumns = `repeat(${COLS}, var(--size))`;
-      boardEl.style.gridTemplateRows = `repeat(${ROWS}, var(--size))`;
+      boardEl.style.gridTemplateRows    = `repeat(${ROWS}, var(--size))`;
       boardEl.setAttribute('aria-label', `${ROWS} by ${COLS} letter grid`);
     }
 
-    window.addEventListener('resize', fitBoardToContainer);
+window.addEventListener('resize', fitBoardToContainer);
+
+    
 
     // --- UTILS ---
     const DIRS=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
@@ -313,18 +357,13 @@
       words.forEach(w => {
         const div=document.createElement("div");
         div.className="word";
-        div.innerHTML=`<span>${w}</span><span class="pill">Find</span>`;
+        div.textContent = w;
         wordListEl.appendChild(div);
         wordEls.set(w,div);
       });
     }
 
-    function updateHUD(words){
-      progressPill.textContent=`${state.found.size} / ${words.length} found`;
-      let left=0; for(const v of state.remainingFreq.values()) left+=v;
-      lettersPill.textContent=`Letters left: ${left}`;
-      roundPill.textContent=`Round ${state.roundIndex+1}`;
-    }
+
 
     // --- GAMEPLAY ---
     function applyDisappearRules(){
@@ -345,29 +384,25 @@
     function adj(a,b){ return Math.max(Math.abs(a.r-b.r), Math.abs(a.c-b.c))===1; }
     function inPath(r,c){ return state.path.some(p => p.r===r && p.c===c); }
 
-    function markFound(word) {
+    function markFound(word){
       if (state.found.has(word)) return;
 
-      // mark word as found
+      // record
       state.found.add(word);
-      const el = wordEls.get(word);
-      if (el) {
-        el.classList.add("found");
-        const pill = el.querySelector(".pill");
-        pill.textContent = "Found";
-        pill.classList.add("good");
-      }
 
-      // reduce needed letters
+      // visually strike through chip
+      const el = wordEls.get(word);
+      if (el) el.classList.add("found");
+
+      // reduce letter needs
       for (const ch of word) {
         const v = state.remainingFreq.get(ch) || 0;
         state.remainingFreq.set(ch, Math.max(0, v - 1));
       }
 
       applyDisappearRules();
-      updateHUD(state.words);
 
-      // check if round complete
+      // round complete?
       if (state.found.size === state.words.length && state.words.length > 0) {
         setStatus("All words found! 🌊🏆", true);
         if (state.timer) clearInterval(state.timer);
@@ -485,7 +520,6 @@
       clearSelection();
 
       setStatus(state.words.length ? `Find all ${state.words.length} words!` : "⚠ No words placed — try Shuffle.");
-      updateHUD(state.words);
       startTimer(base.time);
     }
 
@@ -508,7 +542,7 @@
     playAgainBtn?.addEventListener("click", () => { hideYouWon(); startGame(0); });
 
     // --- CONTROLS ---
-    resetBtn.addEventListener("click", clearSelection);
+    
     shuffleBtn.addEventListener("click", () => {
       const baseWords = currentRoundWordsBase();
       const res = generateSolvable(baseWords);
@@ -520,7 +554,6 @@
       renderWords(state.words);
       renderBoard();
       clearSelection();
-      updateHUD(state.words);
       setStatus(state.words.length ? "New solvable board generated." : "Random board (no words placed).");
     });
     restartBtn.addEventListener("click", () => startGame());
