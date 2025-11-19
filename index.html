@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,16 +13,13 @@
     h1 { font-size: 28px; margin: 0 0 4px; }
     .subtitle { color: #555; font-size: 13px; }
 
-    /* Make word list more prominent under header */
-    .words {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      margin: 8px auto 12px;
-      max-width: 680px;
+    /* Word list under header */
+    .words{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+      gap:8px;
+      margin:8px 0 10px;
     }
-
     main { display: grid; gap: 16px; padding: 12px 16px 28px; max-width: 720px; margin: 0 auto; }
     .board-wrap { display:flex; justify-content:center; }
     .board {
@@ -41,49 +39,40 @@
     }
     .cell.gone { opacity: 0; transform: scale(.7); pointer-events: none; filter: blur(1px); }
     .cell.selected { background: var(--accent); color: #fff; transform: scale(0.96); }
-    .hud {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-    .word {
-      background: #fff;
-      border-radius: 8px;
-      padding: 4px 8px;
-      font-weight: 700;
-      font-size: 12px;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 1px 1px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.06);
-      white-space: nowrap;
+
+    .hud { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap: wrap; }
+
+    .word{
+      background:#fff;
+      border-radius:10px;
+      padding:6px 10px;
+      font-weight:700;
+      font-size:14px;
+      text-transform:uppercase;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 1px 1px rgba(0,0,0,.06), 0 2px 10px rgba(0,0,0,.06);
     }
     .word.found { color: #0a7a35; text-decoration: line-through; opacity: .65; }
+
     .pill { font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 999px; background: #eef2ff; color: #334155; }
     .pill.good { background:#dcfce7; color:#14532d; }
     .pill.bad { background:#fee2e2; color:#7f1d1d; }
+
     .status { min-height: 22px; text-align:center; font-weight:700; }
-    .controls {
-      justify-content: center;
-    }
+
+    .controls { display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; }
+
     button {
-      background:#111827; color:#fff; border:0; border-radius: 10px; padding:10px 14px; font-weight:700; cursor:pointer;
+      background:#111827; color:#fff; border:0; border-radius: 10px; padding:8px 10px; font-weight:700; cursor:pointer;
       box-shadow: 0 1px 1px rgba(0,0,0,.06), 0 3px 12px rgba(0,0,0,.10);
+      font-size: 12px;
     }
     button.secondary { background:#e5e7eb; color:#111; }
+
     footer { text-align:center; color:#666; font-size:12px; padding-bottom: 26px;}
     .row { display:flex; gap:8px; align-items:center; }
-
-    #resetBtn { display:none; }
-
-    button.small {
-      padding: 6px 10px;
-      font-size: 12px;
-      border-radius: 8px;
-      box-shadow: 0 1px 1px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.08);
-    }
 
     @media (max-width: 420px){
       .words{ grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); }
@@ -96,15 +85,19 @@
 <body>
   <header>
     <h1>Is it?!</h1>
-    <div class="subtitle">"Sunday Service" by Nick.</div>
+    <div class="subtitle">"Jumpers for goalposts? Not any more" by Nick.</div>
   </header>
+
+  <!-- Word list directly under header -->
   <section class="words" id="wordList"></section>
+
   <main>
     <div class="hud">
-      <div class="row" style="gap:8px; flex-wrap:wrap; justify-content:center;">
+      <div class="controls">
         <div class="pill" id="timerPill">⏱ 00:00</div>
-        <button id="shuffleBtn" class="small">Shuffle</button>
-        <button id="restartBtn" class="small secondary">Restart</button>
+        <button id="shuffleBtn">Shuffle</button>
+        <button id="restartBtn" class="secondary">Restart</button>
+        <button id="resetBtn" class="secondary" style="display:none;">Clear</button>
       </div>
     </div>
 
@@ -113,7 +106,6 @@
     </div>
 
     <div class="status" id="status"></div>
-    
 
     <!-- Game Over overlay -->
     <div id="gameOver" aria-hidden="true" style="display:none;">
@@ -134,98 +126,131 @@
       </div>
     </div>
   </main>
+
   <footer>Letters disappear when no remaining word needs that letter anymore.</footer>
 
   <!-- Congratulations overlay -->
-<div id="youWon" aria-hidden="true" style="display:none;">
-  <div id="ywBackdrop" style="
-    position:fixed; inset:0; background:rgba(17,24,39,.45); backdrop-filter: blur(2px);
-    display:flex; align-items:center; justify-content:center; z-index:50;">
-    <div style="
-      background:#fff; border-radius:16px; padding:24px; width:min(92vw,420px);
-      box-shadow:0 10px 40px rgba(0,0,0,.18); text-align:center;">
-      <h2 style="margin:0 0 8px;">🎉 Congratulations! 🎉</h2>
-      <p style="margin:0 12px 16px; color:#475569;">
-        You’ve completed all rounds.<br>
-        Come back next week for a new <em>Is it?!</em>
-      </p>
-      <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-        <button id="playAgain" style="background:#111827;color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;">Play again</button>
-        <a href="https://www.thequarry.media/games-by-the-quarry/" target="_blank" rel="noopener">
-          <button class="secondary" style="background:#e5e7eb;color:#111;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;">Other Games</button>
-        </a>
+  <div id="youWon" aria-hidden="true" style="display:none;">
+    <div id="ywBackdrop" style="
+      position:fixed; inset:0; background:rgba(17,24,39,.45); backdrop-filter: blur(2px);
+      display:flex; align-items:center; justify-content:center; z-index:50;">
+      <div style="
+        background:#fff; border-radius:16px; padding:24px; width:min(92vw,420px);
+        box-shadow:0 10px 40px rgba(0,0,0,.18); text-align:center;">
+        <h2 style="margin:0 0 8px;">🎉 Congratulations! 🎉</h2>
+        <p style="margin:0 12px 16px; color:#475569;">
+          You’ve completed all rounds.<br>
+          Come back next week for a new <em>Is it?!</em>
+        </p>
+        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+          <button id="playAgain" style="background:#111827;color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;">Play again</button>
+          <a href="https://thequarry.media" target="_blank" rel="noopener">
+            <button class="secondary" style="background:#e5e7eb;color:#111;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;">Other Games</button>
+          </a>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
   <script>
   (function(){
-    // --- CONFIG ---
+    // --- CONFIG: Guernsey football themed rounds ---
     const ROUNDS = [
-      { 
-        name: "Round 1", 
-        words: ["STPETER", "STMARTIN", "CASTEL", "VALE", "FOREST", "TORTEVAL"], 
-        time: 90 
+      {
+        name: "Round 1 — Clubs",
+        words: [
+          "NORTH",
+          "VALEREC",
+          "STMARTINS",
+          "RANGERS",
+          "ROVERS",
+          "SYLVANS",
+          "WANDERERS",
+          "BELS"
+        ],
+        time: 90
       },
-      { 
-        name: "Round 2", 
-        words: ["APOLLINE", "ROQUE", "TRINITE", "SAMPSON", "MARY", "LITTLE"], 
-        time: 80 
+      {
+        name: "Round 2 — Grounds",
+        words: [
+          "CORBETFIELD",
+          "NORTHFIELD",
+          "PORTSOIF",
+          "THETRACK",
+          "VICTORIAPARK",
+          "KGV",
+          "MONTHALE"
+        ],
+        time: 80
       },
-      { 
-        name: "Round 3", 
-        words: ["ANDREW", "SAVIORS", "CLAIR", "HELENE", "MAGLOIRE", "GEORGE"], 
-        time: 70 
+      {
+        name: "Round 3 — Competitions",
+        words: [
+          "PRIAULX",
+          "JEREMIE",
+          "MARTINEZ",
+          "STRANGER",
+          "RAILWAY",
+          "MURATTI"
+        ],
+        time: 70
       }
     ];
-    const MIN_TIME = 20, MIN_GRID=6, MAX_GRID=8;
 
     const MIN_ROWS = 8, MIN_COLS = 6;
-    let ROWS = MIN_ROWS, COLS = MIN_COLS;
+    const ROWS = MIN_ROWS, COLS = MIN_COLS;
 
     // --- STATE ---
-    
-    const state={
-      grid:[], words:[], found:new Set(), path:[],
-      remainingFreq:new Map(), roundIndex:0, timeLeft:0, timer:null, playing:true
+    const state = {
+      grid: [],
+      words: [],
+      found: new Set(),
+      path: [],
+      remainingFreq: new Map(),
+      roundIndex: 0,
+      timeLeft: 0,
+      timer: null,
+      playing: true,
+      selecting: false
     };
 
     // --- DOM ---
-    const boardEl=document.getElementById("board"),
-      statusEl=document.getElementById("status"),
-      progressPill=document.getElementById("progressPill"),
-      lettersPill=document.getElementById("lettersPill"),
-      roundPill=document.getElementById("roundPill"),
-      timerPill=document.getElementById("timerPill"),
-      shuffleBtn=document.getElementById("shuffleBtn"),
-      restartBtn=document.getElementById("restartBtn"),
-      wordListEl=document.getElementById("wordList");
-    const gameOverEl=document.getElementById("gameOver"),
-      retryRoundBtn=document.getElementById("retryRound"),
-      restartGameBtn=document.getElementById("restartGame");
-    let wordEls=new Map();
+    const boardEl     = document.getElementById("board");
+    const statusEl    = document.getElementById("status");
+    const timerPill   = document.getElementById("timerPill");
+    const resetBtn    = document.getElementById("resetBtn");
+    const shuffleBtn  = document.getElementById("shuffleBtn");
+    const restartBtn  = document.getElementById("restartBtn");
+    const wordListEl  = document.getElementById("wordList");
+
+    const gameOverEl      = document.getElementById("gameOver");
+    const retryRoundBtn   = document.getElementById("retryRound");
+    const restartGameBtn  = document.getElementById("restartGame");
+
+    const youWonEl    = document.getElementById("youWon");
+    const playAgainBtn= document.getElementById("playAgain");
+
+    let wordEls = new Map();
 
     // --- FIT BOARD (auto size tiles for mobile) ---
     function fitBoardToContainer(){
-      const wrap = document.querySelector('.board-wrap');
-      const headerH = document.querySelector('header').offsetHeight || 0;
-      const listH   = document.getElementById('wordList').offsetHeight || 0;
+      const wrap      = document.querySelector('.board-wrap');
+      const headerH   = document.querySelector('header').offsetHeight || 0;
+      const listH     = document.getElementById('wordList').offsetHeight || 0;
       const controlsH = document.querySelector('.hud').offsetHeight || 0;
 
       const viewportH = window.innerHeight || 800;
-      const pad = 28; // main bottom padding
-      const gap = 8;
+      const pad       = 28; // bottom padding
+      const gap       = 8;
 
-      // Width-limited tile size (portrait width)
+      // Width-limited tile size
       const wrapW = wrap.clientWidth || window.innerWidth || 360;
       const tileW = Math.floor((Math.min(wrapW, 720) - gap*(COLS-1)) / COLS);
 
-      // Height-limited tile size (what's left under header + words + controls)
+      // Height-limited tile size
       const availableH = viewportH - headerH - listH - controlsH - pad;
       const tileH = Math.floor((availableH - gap*(ROWS-1)) / ROWS);
 
-      // Choose the smaller of the two, clamp to a sensible range
       const size = Math.max(38, Math.min(tileW, tileH, 64));
 
       document.documentElement.style.setProperty('--size', size + 'px');
@@ -236,30 +261,31 @@
       boardEl.setAttribute('aria-label', `${ROWS} by ${COLS} letter grid`);
     }
 
-window.addEventListener('resize', fitBoardToContainer);
-
-    
+    window.addEventListener('resize', fitBoardToContainer);
 
     // --- UTILS ---
     const DIRS=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
     function inBounds(r,c){ return r >= 0 && r < ROWS && c >= 0 && c < COLS; }
-    function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-    function letterFreq(words){const m=new Map();for(const w of words)for(const ch of w)m.set(ch,(m.get(ch)||0)+1);return m;}
-    function setStatus(t,g=false,b=false){statusEl.textContent=t||"";statusEl.style.color=g?"var(--good)":b?"var(--bad)":"#111";}
+    function shuffled(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+    function letterFreq(words){
+      const m=new Map();
+      for(const w of words) for(const ch of w) m.set(ch,(m.get(ch)||0)+1);
+      return m;
+    }
+    function setStatus(t,g=false,b=false){
+      statusEl.textContent = t || "";
+      statusEl.style.color = g ? "var(--good)" : (b ? "var(--bad)" : "#111");
+    }
 
     // --- GENERATOR (bendy DFS placement, overlaps only on same letter) ---
     function tryPlaceWord(grid, word) {
-      // IMPORTANT: use (_, i) to get the index; value is undefined for sparse arrays
       const starts = shuffled([...Array(ROWS * COLS)].map((_, i) => [Math.floor(i / COLS), i % COLS]));
 
       for (const [sr, sc] of starts) {
         if (grid[sr][sc] && grid[sr][sc] !== word[0]) continue;
 
-        // used matrix must be ROWS x COLS (not SIZE)
         const used = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
         const path = [];
-
-        function inBounds(r, c){ return r>=0 && r<ROWS && c>=0 && c<COLS; }
 
         function dfs(idx, r, c) {
           if (!inBounds(r, c) || used[r][c]) return false;
@@ -291,15 +317,14 @@ window.addEventListener('resize', fitBoardToContainer);
     }
 
     function buildGridFromWords(words){
-      const grid = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+      const grid   = Array.from({length: ROWS}, () => Array(COLS).fill(null));
       const placed = [];
-      const ordered = words.slice().sort((a,b)=>b.length-a.length);
+      const ordered= words.slice().sort((a,b)=>b.length-a.length);
 
       for (const w of ordered) {
         if (tryPlaceWord(grid, w)) placed.push(w);
       }
 
-      // Fill blanks with letters drawn from placed words (or random A–Z)
       const pool = placed.join("").split("");
       for (let r=0; r<ROWS; r++) {
         for (let c=0; c<COLS; c++) {
@@ -312,7 +337,7 @@ window.addEventListener('resize', fitBoardToContainer);
       }
 
       return { grid, words: placed };
-}
+    }
 
     function generateSolvable(words, attempts = 200){
       // Try full list first
@@ -365,7 +390,8 @@ window.addEventListener('resize', fitBoardToContainer);
     }
 
     function renderWords(words){
-      wordListEl.innerHTML=""; wordEls=new Map();
+      wordListEl.innerHTML="";
+      wordEls=new Map();
       words.forEach(w => {
         const div=document.createElement("div");
         div.className="word";
@@ -375,38 +401,41 @@ window.addEventListener('resize', fitBoardToContainer);
       });
     }
 
-
-
     // --- GAMEPLAY ---
     function applyDisappearRules(){
       const cells = boardEl.querySelectorAll(".cell");
-      // If no words placed, never hide tiles
       if (!state.words || state.words.length === 0) {
         cells.forEach(cell => cell.classList.remove("gone"));
         return;
       }
       for (const cell of cells){
-        const ch = cell.dataset.ch;
+        const ch   = cell.dataset.ch;
         const need = state.remainingFreq.get(ch) || 0;
-        if (need <= 0) cell.classList.add("gone"); else cell.classList.remove("gone");
+        if (need <= 0) cell.classList.add("gone");
+        else cell.classList.remove("gone");
       }
     }
 
-    function pathWord(){ return state.path.map(p => state.grid[p.r][p.c]).join(""); }
-    function adj(a,b){ return Math.max(Math.abs(a.r-b.r), Math.abs(a.c-b.c))===1; }
-    function inPath(r,c){ return state.path.some(p => p.r===r && p.c===c); }
+    function pathWord(){
+      return state.path.map(p => state.grid[p.r][p.c]).join("");
+    }
+
+    function adj(a,b){
+      return Math.max(Math.abs(a.r-b.r), Math.abs(a.c-b.c))===1;
+    }
+
+    function inPath(r,c){
+      return state.path.some(p => p.r===r && p.c===c);
+    }
 
     function markFound(word){
       if (state.found.has(word)) return;
 
-      // record
       state.found.add(word);
-
-      // visually strike through chip
       const el = wordEls.get(word);
       if (el) el.classList.add("found");
 
-      // reduce letter needs
+      // reduce needed letters
       for (const ch of word) {
         const v = state.remainingFreq.get(ch) || 0;
         state.remainingFreq.set(ch, Math.max(0, v - 1));
@@ -414,7 +443,7 @@ window.addEventListener('resize', fitBoardToContainer);
 
       applyDisappearRules();
 
-      // round complete?
+      // check if round complete
       if (state.found.size === state.words.length && state.words.length > 0) {
         setStatus("All words found! 🌊🏆", true);
         if (state.timer) clearInterval(state.timer);
@@ -430,18 +459,28 @@ window.addEventListener('resize', fitBoardToContainer);
       }
     }
 
-    function clearSelection(){ state.path=[]; boardEl.querySelectorAll(".cell").forEach(c=>c.classList.remove("selected")); setStatus(""); }
+    function clearSelection(){
+      state.path=[];
+      boardEl.querySelectorAll(".cell").forEach(c=>c.classList.remove("selected"));
+      setStatus("");
+    }
+
     function tryCommitSelection(){
-      const w = pathWord(); if (!w) return;
-      if (state.words.includes(w) && !state.found.has(w)){ markFound(w); setStatus(`Nice! You found ${w}.`, true); }
-      else setStatus(`“${w}” is not on the list.`, false, true);
+      const w = pathWord();
+      if (!w) return;
+      if (state.words.includes(w) && !state.found.has(w)){
+        markFound(w);
+        setStatus(`Nice! You found ${w}.`, true);
+      } else {
+        setStatus(`“${w}” is not on the list.`, false, true);
+      }
       clearSelection();
     }
 
     function cellFromEvent(e){
       if (e.touches && e.touches.length){
-        const t=e.touches[0];
-        const el=document.elementFromPoint(t.clientX,t.clientY);
+        const t  = e.touches[0];
+        const el = document.elementFromPoint(t.clientX,t.clientY);
         return el && el.classList.contains("cell") ? el : null;
       } else {
         return e.target && e.target.classList && e.target.classList.contains("cell") ? e.target : null;
@@ -453,7 +492,13 @@ window.addEventListener('resize', fitBoardToContainer);
       if (!cell || cell.classList.contains("gone")) return;
       const r=+cell.dataset.r, c=+cell.dataset.c;
       const last=state.path[state.path.length-1];
-      if (state.path.length===0){ state.path.push({r,c}); cell.classList.add("selected"); return; }
+
+      if (state.path.length===0){
+        state.path.push({r,c});
+        cell.classList.add("selected");
+        return;
+      }
+
       if (state.path.length>=2){
         const prev=state.path[state.path.length-2];
         if (prev.r===r && prev.c===c){
@@ -463,17 +508,36 @@ window.addEventListener('resize', fitBoardToContainer);
           return;
         }
       }
+
       if (!adj(last,{r,c}) || inPath(r,c)) return;
-      state.path.push({r,c}); cell.classList.add("selected");
+      state.path.push({r,c});
+      cell.classList.add("selected");
     }
 
-    function onStart(e){ if(!state.playing) return; state.selecting=true; clearSelection(); selectCell(cellFromEvent(e)); e.preventDefault(); }
-    function onMove(e){ if(!state.selecting) return; selectCell(cellFromEvent(e)); e.preventDefault(); }
-    function onEnd(e){ if(!state.selecting) return; state.selecting=false; tryCommitSelection(); e.preventDefault(); }
+    function onStart(e){
+      if(!state.playing) return;
+      state.selecting=true;
+      clearSelection();
+      selectCell(cellFromEvent(e));
+      e.preventDefault();
+    }
+    function onMove(e){
+      if(!state.selecting) return;
+      selectCell(cellFromEvent(e));
+      e.preventDefault();
+    }
+    function onEnd(e){
+      if(!state.selecting) return;
+      state.selecting=false;
+      tryCommitSelection();
+      e.preventDefault();
+    }
+
     function bindEvents(){
       boardEl.addEventListener("mousedown", onStart);
       boardEl.addEventListener("mousemove", onMove);
       window.addEventListener("mouseup", onEnd);
+
       boardEl.addEventListener("touchstart", onStart, {passive:false});
       boardEl.addEventListener("touchmove", onMove, {passive:false});
       window.addEventListener("touchend", onEnd, {passive:false});
@@ -490,20 +554,46 @@ window.addEventListener('resize', fitBoardToContainer);
       gameOverEl.style.display = "none";
       gameOverEl.setAttribute("aria-hidden","true");
     }
-    document.getElementById("retryRound").addEventListener("click", () => { hideGameOver(); startRound(state.roundIndex); });
-    document.getElementById("restartGame").addEventListener("click", () => { hideGameOver(); startGame(0); });
+    retryRoundBtn.addEventListener("click", () => {
+      hideGameOver();
+      startRound(state.roundIndex);
+    });
+    restartGameBtn.addEventListener("click", () => {
+      hideGameOver();
+      startGame(0);
+    });
+
+    // --- YOU WON overlay helpers ---
+    function showYouWon(){
+      state.playing = false;
+      if (state.timer) clearInterval(state.timer);
+      youWonEl.style.display = "block";
+      youWonEl.setAttribute("aria-hidden", "false");
+    }
+    function hideYouWon(){
+      youWonEl.style.display = "none";
+      youWonEl.setAttribute("aria-hidden", "true");
+    }
+    playAgainBtn?.addEventListener("click", () => {
+      hideYouWon();
+      startGame(0);
+    });
 
     // --- TIMER / ROUNDS ---
     function updateTimerPill(){
       const t=Math.max(0,state.timeLeft);
-      const m=String(Math.floor(t/60)).padStart(2,'0'), s=String(t%60).padStart(2,'0');
+      const m=String(Math.floor(t/60)).padStart(2,'0');
+      const s=String(t%60).padStart(2,'0');
       timerPill.textContent=`⏱ ${m}:${s}`;
     }
     function startTimer(sec){
       if (state.timer) clearInterval(state.timer);
-      state.timeLeft=sec; state.playing=true; updateTimerPill();
+      state.timeLeft=sec;
+      state.playing=true;
+      updateTimerPill();
       state.timer=setInterval(()=>{
-        state.timeLeft--; updateTimerPill();
+        state.timeLeft--;
+        updateTimerPill();
         if (state.timeLeft<=0){
           clearInterval(state.timer);
           setStatus("Out of time!", false, true);
@@ -512,19 +602,22 @@ window.addEventListener('resize', fitBoardToContainer);
       },1000);
     }
 
-    function currentRoundWordsBase(){ return ROUNDS[state.roundIndex]?.words || ROUNDS[ROUNDS.length-1].words; }
+    function currentRoundWordsBase(){
+      return ROUNDS[state.roundIndex]?.words || ROUNDS[ROUNDS.length-1].words;
+    }
 
     function startRound(i) {
       hideGameOver();
+      hideYouWon();
       state.playing = true;
       state.roundIndex = i;
       const base = ROUNDS[i] || ROUNDS[ROUNDS.length - 1];
 
       const result = generateSolvable(base.words);
-      state.grid = result.grid;
+      state.grid  = result.grid;
       state.words = Array.isArray(result.words) ? result.words : [];
       state.found = new Set();
-      state.path = [];
+      state.path  = [];
       state.remainingFreq = letterFreq(state.words);
 
       renderWords(state.words);
@@ -537,31 +630,15 @@ window.addEventListener('resize', fitBoardToContainer);
 
     function startGame(){ startRound(0); }
 
-    // --- YOU WON overlay helpers ---
-    const youWonEl = document.getElementById("youWon");
-    const playAgainBtn = document.getElementById("playAgain");
-
-    function showYouWon(){
-      state.playing = false;
-      if (state.timer) clearInterval(state.timer);
-      youWonEl.style.display = "block";
-      youWonEl.setAttribute("aria-hidden", "false");
-    }
-    function hideYouWon(){
-      youWonEl.style.display = "none";
-      youWonEl.setAttribute("aria-hidden", "true");
-    }
-    playAgainBtn?.addEventListener("click", () => { hideYouWon(); startGame(0); });
-
     // --- CONTROLS ---
-    
+    resetBtn.addEventListener("click", clearSelection);
     shuffleBtn.addEventListener("click", () => {
       const baseWords = currentRoundWordsBase();
       const res = generateSolvable(baseWords);
-      state.grid = res.grid;
+      state.grid  = res.grid;
       state.words = Array.isArray(res.words) ? res.words : [];
       state.found = new Set();
-      state.path = [];
+      state.path  = [];
       state.remainingFreq = letterFreq(state.words);
       renderWords(state.words);
       renderBoard();
